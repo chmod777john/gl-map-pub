@@ -83,7 +83,7 @@ class BabylonLayer implements CustomLayerInterface {
     this.camera = new BABYLON.Camera("mapbox-camera", new BABYLON.Vector3(), this.scene);
     const light = new BABYLON.HemisphericLight("mapbox-light", BABYLON.Vector3.One(), this.scene);
 
-    BABYLON.SceneLoader.Append("https://docs.mapbox.com/mapbox-gl-js/assets/34M_17/", "34M_17.gltf", this.scene);
+    BABYLON.SceneLoader.Append("/", "TORONTO3D_mesh_2.gltf", this.scene);
 
     // parameters to ensure the model is georeferenced correctly on the map
     const modelOrigin = [148.9819, -35.39847] as LngLatLike;
