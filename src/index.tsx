@@ -28,7 +28,6 @@ const ChildComp = ()=> {
   
 
   useEffect(()=>{
-    console.log('执行了一次')
     mapboxgl.accessToken = 'pk.eyJ1IjoibWFwYm94LWdsLWpzIiwiYSI6ImNram9ybGI1ajExYjQyeGxlemppb2pwYjIifQ.LGy5UGNIsXUZdYMvfYRiAQ'
     const map = new mapboxgl.Map({
       container: 'map',
@@ -41,7 +40,6 @@ const ChildComp = ()=> {
   });
 
     map.on('load', () => {
-      console.log('检测')
       const babylonLayer = new BabylonLayer('babylon-layer-2');
       map.addLayer(babylonLayer);
     });
@@ -107,13 +105,25 @@ class BabylonLayer implements CustomLayerInterface {
     const boxMesh = BABYLON.MeshBuilder.CreateBox(
       "box",
       {
-        // size: 10 * boxCoord.meterInMercatorCoordinateUnits()
-        size: 30
+        size: 1
+        // size: 30
       },
       this.scene
     );
-    console.log(boxCoord.meterInMercatorCoordinateUnits())
     boxMesh.position = new BABYLON.Vector3(boxCoord.x, boxCoord.y, boxCoord.z);
+
+
+    const boxMesh2 = BABYLON.MeshBuilder.CreateBox(
+      "box",
+      {
+        size: 1
+        // size: 30
+      },
+      this.scene
+    );
+    boxMesh2.position = new BABYLON.Vector3(boxCoord.x * 1.1, boxCoord.y, boxCoord.z);
+
+    console.log(10 * boxCoord.meterInMercatorCoordinateUnits())
 
     const sphereCoord = mapboxgl.MercatorCoordinate.fromLngLat(
       [148.9829, -35.39847],
@@ -122,8 +132,8 @@ class BabylonLayer implements CustomLayerInterface {
     const sphereMesh = BABYLON.MeshBuilder.CreateSphere(
       "sphere",
       {
-        // diameter: 30 * sphereCoord.meterInMercatorCoordinateUnits()
-        diameter: 30
+        diameter: 30 * sphereCoord.meterInMercatorCoordinateUnits()
+        // diameter: 30
       },
       this.scene
     );
@@ -133,23 +143,38 @@ class BabylonLayer implements CustomLayerInterface {
       sphereCoord.z
     );
 
+
+    // console.log(sphereMesh.position)
+    window.box = boxMesh
+    window.sp = sphereMesh
+    window.camera = this.camera
+    window.babylon = BABYLON
+    window.ss  = this.scene
+
     BABYLON.SceneLoader.Append("/", "TORONTO3D_mesh_2.gltf", this.scene, (results) => {
       // 获取导入的模型对象
       const meshes = results.meshes;
-      const modelOrigin = [148.9819, -35.39847] as LngLatLike;
+      const modelOrigin = [148.9819, -35.3981] as LngLatLike;
       // 计算模型的初始位置
       const modelAltitude = 0;
       const modelCoords = mapboxgl.MercatorCoordinate.fromLngLat(modelOrigin, modelAltitude);
   
+      // 处理缩放
       const scale = modelCoords.meterInMercatorCoordinateUnits()
+
       console.log(meshes.length, 'l')
       meshes.map(( mesh )=>{
+
+        // mesh 可以是刚刚加载进来的gltf  也可以是别处的圆或者方块；  圆和方块要保持不变，我们只想要设置 gltf 的 position 
+        if (mesh.id !== '__root__') return
+
+        console.log('the scale', scale)
+        mesh.scaling = new BABYLON.Vector3(scale, scale, scale)
         mesh.position = new BABYLON.Vector3(
           modelCoords.x,
           modelCoords.y,
           0
         )
-        mesh.scaling = new BABYLON.Vector3(scale, scale, scale)
       })
 
       console.log(meshes[0].getBoundingInfo(), 'info')
