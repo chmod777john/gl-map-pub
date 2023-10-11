@@ -53,6 +53,15 @@ const ChildComp = ()=> {
 createRoot(document.getElementById('root')!).render(<App></App>);
 
 
+
+const modelData = [
+  { filename: 'TORONTO3D_mesh_2.gltf', latitude: -35.3981, longitude: 148.9819 },
+  { filename: 'TORONTO3D_mesh_2.gltf', latitude: -35.3990, longitude: 148.9819 },
+  { filename: 'TORONTO3D_mesh_2.gltf', latitude: -35.3990, longitude: 148.980 },
+  // ... 其他模型数据 ...
+];
+
+type T = typeof modelData
 class BabylonLayer implements CustomLayerInterface {
   readonly id: string;
   readonly type: "custom" = "custom";
@@ -66,6 +75,55 @@ class BabylonLayer implements CustomLayerInterface {
   constructor(id: string) {
     this.id = id;
   }
+
+
+  public async loadModels(modelData:T) {
+    return new Promise(async (resolve, reject) => {
+      const assetsManager = new BABYLON.AssetsManager(this.scene);
+  
+      modelData.forEach(item => {
+        const { filename, latitude, longitude } = item;
+  
+        const meshTask = assetsManager.addMeshTask(filename, '', '/', filename);
+  
+        meshTask.onSuccess = task => {
+          
+          const meshes = task.loadedMeshes;
+  
+          const modelAltitude = 0;
+          const modelCoords = mapboxgl.MercatorCoordinate.fromLngLat([longitude, latitude], modelAltitude);
+          const scale = modelCoords.meterInMercatorCoordinateUnits();
+  
+          meshes.forEach(mesh => {
+            if (mesh.id !== '__root__') return;
+  
+            mesh.scaling = new BABYLON.Vector3(scale, scale, scale);
+            mesh.position = new BABYLON.Vector3(modelCoords.x, modelCoords.y, 0);
+            console.log(mesh.position)
+          });
+        };
+  
+        meshTask.onError = (task, message, exception) => {
+          console.error(`Error loading model ${filename}:`, message, exception);
+          reject(task.errorObject);
+        };
+      });
+  
+      assetsManager.onFinish = tasks => {
+        console.log('All tasks completed successfully.');
+        resolve(tasks);
+      };
+  
+      assetsManager.onTaskError = task => {
+        console.error(`Task error for ${task.name}:`, task.errorObject);
+        reject(task.errorObject);
+      };
+  
+      assetsManager.load();
+    });
+  }
+  
+  
 
   onAdd = (map: Map, gl: WebGLRenderingContext) => {
     this.map = map;
@@ -97,92 +155,92 @@ class BabylonLayer implements CustomLayerInterface {
 
 
   
-    const boxCoord = mapboxgl.MercatorCoordinate.fromLngLat(
-      [148.9819, -35.39847],
-      // [0,0],
-      // 200
-    );
-    const boxMesh = BABYLON.MeshBuilder.CreateBox(
-      "box",
-      {
-        size: 1
-        // size: 30
-      },
-      this.scene
-    );
-    boxMesh.position = new BABYLON.Vector3(boxCoord.x, boxCoord.y, boxCoord.z);
+    // const boxCoord = mapboxgl.MercatorCoordinate.fromLngLat(
+    //   [148.9819, -35.39847],
+    //   // [0,0],
+    //   // 200
+    // );
+    // const boxMesh = BABYLON.MeshBuilder.CreateBox(
+    //   "box",
+    //   {
+    //     size: 1
+    //     // size: 30
+    //   },
+    //   this.scene
+    // );
+    // boxMesh.position = new BABYLON.Vector3(boxCoord.x, boxCoord.y, boxCoord.z);
 
 
-    const boxMesh2 = BABYLON.MeshBuilder.CreateBox(
-      "box",
-      {
-        size: 1
-        // size: 30
-      },
-      this.scene
-    );
-    boxMesh2.position = new BABYLON.Vector3(boxCoord.x * 1.1, boxCoord.y, boxCoord.z);
+    // const boxMesh2 = BABYLON.MeshBuilder.CreateBox(
+    //   "box",
+    //   {
+    //     size: 1
+    //     // size: 30
+    //   },
+    //   this.scene
+    // );
+    // boxMesh2.position = new BABYLON.Vector3(boxCoord.x * 1.1, boxCoord.y, boxCoord.z);
 
-    console.log(10 * boxCoord.meterInMercatorCoordinateUnits())
+    // console.log(10 * boxCoord.meterInMercatorCoordinateUnits())
 
-    const sphereCoord = mapboxgl.MercatorCoordinate.fromLngLat(
-      [148.9829, -35.39847],
-      // 400
-    );
-    const sphereMesh = BABYLON.MeshBuilder.CreateSphere(
-      "sphere",
-      {
-        diameter: 30 * sphereCoord.meterInMercatorCoordinateUnits()
-        // diameter: 30
-      },
-      this.scene
-    );
-    sphereMesh.position = new BABYLON.Vector3(
-      sphereCoord.x,
-      sphereCoord.y,
-      sphereCoord.z
-    );
-
+    // const sphereCoord = mapboxgl.MercatorCoordinate.fromLngLat(
+    //   [148.9829, -35.39847],
+    //   // 400
+    // );
+    // const sphereMesh = BABYLON.MeshBuilder.CreateSphere(
+    //   "sphere",
+    //   {
+    //     diameter: 30 * sphereCoord.meterInMercatorCoordinateUnits()
+    //     // diameter: 30
+    //   },
+    //   this.scene
+    // );
+    // sphereMesh.position = new BABYLON.Vector3(
+    //   sphereCoord.x,
+    //   sphereCoord.y,
+    //   sphereCoord.z
+    // );
 
     // console.log(sphereMesh.position)
-    window.box = boxMesh
-    window.sp = sphereMesh
+    // window.box = boxMesh
+    // window.sp = sphereMesh
     window.camera = this.camera
     window.babylon = BABYLON
     window.ss  = this.scene
 
-    BABYLON.SceneLoader.Append("/", "TORONTO3D_mesh_2.gltf", this.scene, (results) => {
-      // 获取导入的模型对象
-      const meshes = results.meshes;
-      const modelOrigin = [148.9819, -35.3981] as LngLatLike;
-      // 计算模型的初始位置
-      const modelAltitude = 0;
-      const modelCoords = mapboxgl.MercatorCoordinate.fromLngLat(modelOrigin, modelAltitude);
+    // BABYLON.SceneLoader.Append("/", "TORONTO3D_mesh_2.gltf", this.scene, (results) => {
+    //   // 获取导入的模型对象
+    //   const meshes = results.meshes;
+    //   const modelOrigin = [148.9819, -35.3981] as LngLatLike;
+    //   // 计算模型的初始位置
+    //   const modelAltitude = 0;
+    //   const modelCoords = mapboxgl.MercatorCoordinate.fromLngLat(modelOrigin, modelAltitude);
   
-      // 处理缩放
-      const scale = modelCoords.meterInMercatorCoordinateUnits()
+    //   // 处理缩放
+    //   const scale = modelCoords.meterInMercatorCoordinateUnits()
 
-      console.log(meshes.length, 'l')
-      meshes.map(( mesh )=>{
+    //   console.log(meshes.length, 'l')
+    //   meshes.map(( mesh )=>{
 
-        // mesh 可以是刚刚加载进来的gltf  也可以是别处的圆或者方块；  圆和方块要保持不变，我们只想要设置 gltf 的 position 
-        if (mesh.id !== '__root__') return
+    //     // mesh 可以是刚刚加载进来的gltf  也可以是别处的圆或者方块；  圆和方块要保持不变，我们只想要设置 gltf 的 position 
+    //     if (mesh.id !== '__root__') return
 
-        console.log('the scale', scale)
-        mesh.scaling = new BABYLON.Vector3(scale, scale, scale)
-        mesh.position = new BABYLON.Vector3(
-          modelCoords.x,
-          modelCoords.y,
-          0
-        )
-      })
+    //     console.log('the scale', scale)
+    //     mesh.scaling = new BABYLON.Vector3(scale, scale, scale)
+    //     mesh.position = new BABYLON.Vector3(
+    //       modelCoords.x,
+    //       modelCoords.y,
+    //       0
+    //     )
+    //   })
 
-      console.log(meshes[0].getBoundingInfo(), 'info')
+    //   console.log(meshes[0].getBoundingInfo(), 'info')
 
-      // 将模型移动到合适的位置
-    });
+    //   // 将模型移动到合适的位置
+    // });
 
   
+    this.loadModels(modelData)
 
     // parameters to ensure the model is georeferenced correctly on the map
     const modelOrigin = [148.9819, -35.39847] as LngLatLike;
