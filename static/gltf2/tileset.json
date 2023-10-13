@@ -1,0 +1,71 @@
+{
+    "asset": {
+      "version": "1.0"
+    },
+    "extensionsUsed": ["3DTILES_content_gltf"],
+    "extensionsRequired": ["3DTILES_content_gltf"],
+    "geometricError": 240,
+    "root": {
+      "boundingVolume": {
+        "region": [
+            148.9820,
+            -35.3981,
+            148.9818,
+            -35.3981,
+            0,
+            88
+          ]
+      },
+      "geometricError": 70,
+      "refine": "ADD",
+      "content": {
+        "uri": "none",
+        "boundingVolume": {
+          "region": [
+            148.9820,
+            -35.3981,
+            148.9818,
+            -35.3981,
+            0,
+            88
+          ]
+        }
+      },
+      "children": [
+        {
+          "boundingVolume": {
+            "region": [
+                148.9830,
+                -35.3981,
+                148.9828,
+                -35.3981,
+                0,
+                88
+              ]
+          },
+          "geometricError": 0,
+          "content": {
+            "uri": "mesh.gltf"
+          }
+        },
+        {
+            "boundingVolume": {
+                "region": [
+                    148.9820,
+                    -35.3981,
+                    148.9818,
+                    -35.3981,
+                    0,
+                    88
+                  ]
+            },
+            "geometricError": 0,
+            "content": {
+              "uri": "mesh.gltf"
+            }
+          }
+        
+      ]
+    }
+  }
+  

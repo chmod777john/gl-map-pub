@@ -10,7 +10,7 @@ import "@babylonjs/loaders";
 
 import { CustomLayerInterface, LngLatLike } from 'mapbox-gl';
 
-
+import axios from 'axios'
 //import './mapbox-gl.css'
 
 
@@ -28,23 +28,34 @@ const ChildComp = ()=> {
   
 
   useEffect(()=>{
-    mapboxgl.accessToken = 'pk.eyJ1IjoibWFwYm94LWdsLWpzIiwiYSI6ImNram9ybGI1ajExYjQyeGxlemppb2pwYjIifQ.LGy5UGNIsXUZdYMvfYRiAQ'
-    const map = new mapboxgl.Map({
-      container: 'map',
-      style: 'mapbox://styles/mapbox/light-v10',
-      zoom: 18,
-      center: [148.9819, -35.3981],
-      // center:[0,0],
-      pitch: 60,
-      antialias: true // create the gl context with MSAA antialiasing, so custom layers are antialiased
-  });
 
-    map.on('load', () => {
-      const babylonLayer = new BabylonLayer('babylon-layer-2');
-      map.addLayer(babylonLayer);
+    (async ()=>{
+
+      const response = await axios.get('/tileset.json'); 
+      const tilesetData = response.data;
+      
+      const { rootCenter: {latitude, longitude} } = parseTilesetData(tilesetData); // 假设有一个解析函数来处理tilesetData
+
+      mapboxgl.accessToken = 'pk.eyJ1IjoibWFwYm94LWdsLWpzIiwiYSI6ImNram9ybGI1ajExYjQyeGxlemppb2pwYjIifQ.LGy5UGNIsXUZdYMvfYRiAQ'
+      const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/light-v10',
+        zoom: 18,
+        center: [longitude, latitude],
+        // center:[0,0],
+        pitch: 60,
+        antialias: true // create the gl context with MSAA antialiasing, so custom layers are antialiased
     });
+  
+      map.on('load', () => {
+        const babylonLayer = new BabylonLayer('babylon-layer-2');
+        map.addLayer(babylonLayer);
+      });
+
+    })()
 
   }, [])
+
   return <>
   </>
 }
@@ -53,15 +64,6 @@ const ChildComp = ()=> {
 createRoot(document.getElementById('root')!).render(<App></App>);
 
 
-
-const modelData = [
-  { filename: 'TORONTO3D_mesh_2.gltf', latitude: -35.3981, longitude: 148.9819 },
-  { filename: 'TORONTO3D_mesh_2.gltf', latitude: -35.3990, longitude: 148.9819 },
-  { filename: 'TORONTO3D_mesh_2.gltf', latitude: -35.3990, longitude: 148.980 },
-  // ... 其他模型数据 ...
-];
-
-type T = typeof modelData
 class BabylonLayer implements CustomLayerInterface {
   readonly id: string;
   readonly type: "custom" = "custom";
@@ -77,11 +79,19 @@ class BabylonLayer implements CustomLayerInterface {
   }
 
 
-  public async loadModels(modelData:T) {
+  public async loadModels() {
     return new Promise(async (resolve, reject) => {
+
+      const response = await axios.get('/tileset.json'); 
+      const tilesetData = response.data;
+
+      const modD = parseTilesetData(tilesetData); // 假设有一个解析函数来处理tilesetData
+
+
+
       const assetsManager = new BABYLON.AssetsManager(this.scene);
   
-      modelData.forEach(item => {
+      modD.modelData.forEach(item => {
         const { filename, latitude, longitude } = item;
   
         const meshTask = assetsManager.addMeshTask(filename, '', '/', filename);
@@ -240,7 +250,7 @@ class BabylonLayer implements CustomLayerInterface {
     // });
 
   
-    this.loadModels(modelData)
+    this.loadModels()
 
     // parameters to ensure the model is georeferenced correctly on the map
     const modelOrigin = [148.9819, -35.39847] as LngLatLike;
@@ -269,4 +279,109 @@ class BabylonLayer implements CustomLayerInterface {
     this.scene!.render(false);
     this.map!.triggerRepaint();
   }
+}
+
+
+const example = {
+  "asset": {
+    "version": "1.0"
+  },
+  "extensionsUsed": ["3DTILES_content_gltf"],
+  "extensionsRequired": ["3DTILES_content_gltf"],
+  "geometricError": 240,
+  "root": {
+    "boundingVolume": {
+      "region": [
+          148.9820,
+          -35.3981,
+          148.9818,
+          -35.3981,
+          0,
+          88
+        ]
+    },
+    "geometricError": 70,
+    "refine": "ADD",
+    "content": {
+      "uri": "none",
+      "boundingVolume": {
+        "region": [
+          148.9820,
+          -35.3981,
+          148.9818,
+          -35.3981,
+          0,
+          88
+        ]
+      }
+    },
+    "children": [
+      {
+        "boundingVolume": {
+          "region": [
+              148.9830,
+              -35.3981,
+              148.9828,
+              -35.3981,
+              0,
+              88
+            ]
+        },
+        "geometricError": 0,
+        "content": {
+          "uri": "mesh.gltf"
+        }
+      },
+      {
+          "boundingVolume": {
+              "region": [
+                  148.9820,
+                  -35.3981,
+                  148.9818,
+                  -35.3981,
+                  0,
+                  88
+                ]
+          },
+          "geometricError": 0,
+          "content": {
+            "uri": "mesh.gltf"
+          }
+        }
+      
+    ]
+  }
+}
+function parseTilesetData(tilesetData: typeof example) {
+  const modelData: { filename:string, latitude:number, longitude:number }[] = [];
+  const rootRegion = tilesetData.root.boundingVolume.region;
+  
+  tilesetData.root.children.forEach(child => {
+    const childRegion = child.boundingVolume.region;
+    const latitude = (childRegion[1] + childRegion[3]) / 2;
+    const longitude = (childRegion[0] + childRegion[2]) / 2;
+    
+    // Skip children with zero geometricError
+    // if (child.geometricError !== 0) {
+      if (true){
+      const filename = child.content.uri;
+      modelData.push({
+        filename: filename,
+        latitude: latitude,
+        longitude: longitude
+      });
+    }
+  });
+
+  // Calculating center of the root region
+  const rootLatitude = (rootRegion[1] + rootRegion[3]) / 2;
+  const rootLongitude = (rootRegion[0] + rootRegion[2]) / 2;
+  
+  return {
+    modelData: modelData,
+    rootCenter: {
+      latitude: rootLatitude,
+      longitude: rootLongitude
+    }
+  };
 }
