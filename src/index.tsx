@@ -31,17 +31,20 @@ const ChildComp = ()=> {
 
     (async ()=>{
 
-      const response = await axios.get('/tileset.json'); 
-      const tilesetData = response.data;
-      
-      const { rootCenter: {latitude, longitude} } = parseTilesetData(tilesetData); // 假设有一个解析函数来处理tilesetData
-
+      const response = await axios.get('/data/Berlin_Buildings_Layer2_collada_MasterJSON.json'); 
+      const boxData:{
+        bbox: {
+          xmin: number,
+          ymin: number
+        }
+      } = response.data;
+  
       mapboxgl.accessToken = 'pk.eyJ1IjoibWFwYm94LWdsLWpzIiwiYSI6ImNram9ybGI1ajExYjQyeGxlemppb2pwYjIifQ.LGy5UGNIsXUZdYMvfYRiAQ'
       const map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/light-v10',
         zoom: 18,
-        center: [longitude, latitude],
+        center: [boxData.bbox.xmin ,  boxData.bbox.ymin],
         // center:[0,0],
         pitch: 60,
         antialias: true // create the gl context with MSAA antialiasing, so custom layers are antialiased
@@ -82,22 +85,29 @@ class BabylonLayer implements CustomLayerInterface {
   public async loadModels() {
     return new Promise(async (resolve, reject) => {
 
-      const response = await axios.get('/tileset.json'); 
-      const tilesetData = response.data;
+      const response = await axios.get('/data/Berlin_Buildings_Layer2.json'); 
+      // const tilesetData = response.data;
+      const kmlData = response.data
 
-      const modD = parseTilesetData(tilesetData); // 假设有一个解析函数来处理tilesetData
+      // const modD = parseTilesetData(tilesetData); // 假设有一个解析函数来处理tilesetData
 
+      const modD = parseKmlData(kmlData)
 
 
       const assetsManager = new BABYLON.AssetsManager(this.scene);
-  
-      modD.modelData.forEach(item => {
+
+      let progress = 0
+
+      modD.forEach(item => {
         const { filename, latitude, longitude } = item;
   
-        const meshTask = assetsManager.addMeshTask(filename, '', '/', filename);
+        const meshTask = assetsManager.addMeshTask(filename, '', '/data/', filename);
   
         meshTask.onSuccess = task => {
           
+          progress ++
+          console.log(progress)
+
           const meshes = task.loadedMeshes;
   
           const modelAltitude = 0;
@@ -109,7 +119,7 @@ class BabylonLayer implements CustomLayerInterface {
   
             mesh.scaling = new BABYLON.Vector3(scale, scale, scale);
             mesh.position = new BABYLON.Vector3(modelCoords.x, modelCoords.y, 0);
-            console.log(mesh.position)
+            // console.log(mesh.position)
           });
         };
   
@@ -384,4 +394,29 @@ function parseTilesetData(tilesetData: typeof example) {
       longitude: rootLongitude
     }
   };
+}
+
+function parseKmlData(kmlData: {
+  [fileId: string]: {
+    envelope: [number, number, number, number];
+    tile: [number, number];
+};
+
+}) {
+  const modelData: { filename:string, latitude:number, longitude:number }[] = [];
+  Object.keys(kmlData).forEach(( fileId )=>{
+    const envelope = kmlData[fileId].envelope 
+    const latitude = (envelope[1] + envelope[3]) / 2
+    const longitude = (envelope[0] + envelope[2]) / 2
+
+    const filename = fileId + '.gltf'
+
+    modelData.push({
+      filename: filename,
+      latitude: latitude,
+      longitude: longitude
+    })
+
+  })
+  return modelData
 }
