@@ -39,7 +39,7 @@ const ChildComp = ()=> {
         }
       } = response.data;
   
-      mapboxgl.accessToken = 'pk.eyJ1IjoibWFwYm94LWdsLWpzIiwiYSI6ImNram9ybGI1ajExYjQyeGxlemppb2pwYjIifQ.LGy5UGNIsXUZdYMvfYRiAQ'
+      mapboxgl.accessToken = 'pk.eyJ1IjoiZGV2aWRlZDAiLCJhIjoiY2xsbzE3cHp5MDV4ZzNycDZyNjMxaXIxbSJ9.ZTRvdmiOwP0AG8GetebzlQ'
       const map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/light-v10',
@@ -118,6 +118,7 @@ class BabylonLayer implements CustomLayerInterface {
             if (mesh.id !== '__root__') return;
   
             mesh.scaling = new BABYLON.Vector3(scale, scale, scale);
+            mesh.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(Math.PI / 2, 0, 0)
             mesh.position = new BABYLON.Vector3(modelCoords.x, modelCoords.y, 0);
             // console.log(mesh.position)
           });
@@ -176,42 +177,30 @@ class BabylonLayer implements CustomLayerInterface {
 
   
     // const boxCoord = mapboxgl.MercatorCoordinate.fromLngLat(
-    //   [148.9819, -35.39847],
+    //   [13.381, 52.532],
     //   // [0,0],
     //   // 200
     // );
     // const boxMesh = BABYLON.MeshBuilder.CreateBox(
     //   "box",
     //   {
-    //     size: 1
-    //     // size: 30
+    //     // size: 10 * boxCoord.meterInMercatorCoordinateUnits()
+    //     size: 30
     //   },
     //   this.scene
     // );
+    // console.log(boxCoord.meterInMercatorCoordinateUnits())
     // boxMesh.position = new BABYLON.Vector3(boxCoord.x, boxCoord.y, boxCoord.z);
 
-
-    // const boxMesh2 = BABYLON.MeshBuilder.CreateBox(
-    //   "box",
-    //   {
-    //     size: 1
-    //     // size: 30
-    //   },
-    //   this.scene
-    // );
-    // boxMesh2.position = new BABYLON.Vector3(boxCoord.x * 1.1, boxCoord.y, boxCoord.z);
-
-    // console.log(10 * boxCoord.meterInMercatorCoordinateUnits())
-
     // const sphereCoord = mapboxgl.MercatorCoordinate.fromLngLat(
-    //   [148.9829, -35.39847],
+    //   [13.3, 52.5],
     //   // 400
     // );
     // const sphereMesh = BABYLON.MeshBuilder.CreateSphere(
     //   "sphere",
     //   {
-    //     diameter: 30 * sphereCoord.meterInMercatorCoordinateUnits()
-    //     // diameter: 30
+    //     // diameter: 30 * sphereCoord.meterInMercatorCoordinateUnits()
+    //     diameter: 30
     //   },
     //   this.scene
     // );
@@ -220,6 +209,38 @@ class BabylonLayer implements CustomLayerInterface {
     //   sphereCoord.y,
     //   sphereCoord.z
     // );
+
+    // const cone = BABYLON.MeshBuilder.CreateCylinder("cone", { height: 20, diameterTop: 10, diameterBottom: 20, tessellation: 40 }, this.scene);
+
+    // const coneCoord = mapboxgl.MercatorCoordinate.fromLngLat(
+    //   [13.381455644224731, 52.532437942637095]
+    // )
+    // cone.position = new BABYLON.Vector3(
+    //   coneCoord.x,
+    //   coneCoord.y,
+    //   coneCoord.z
+    // )
+
+    // const modelOrigin = [13.381455644224731, 52.532437942637095] as LngLatLike;
+    // // 计算模型的初始位置
+    // const modelAltitude = 0;
+    // const modelCoords = mapboxgl.MercatorCoordinate.fromLngLat(modelOrigin, modelAltitude);
+
+    // const scale = modelCoords.meterInMercatorCoordinateUnits()
+
+
+    // const group = [boxMesh, sphereMesh, cone]
+    // group.map(( mesh )=>{
+      
+    //   // mesh.position = new BABYLON.Vector3(
+    //   //   modelCoords.x,
+    //   //   modelCoords.y,
+    //   // )
+    //   mesh.scaling = new BABYLON.Vector3(scale, scale, scale)
+    //   mesh.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(Math.PI / 2, 0, 0)
+    // })
+
+
 
     // console.log(sphereMesh.position)
     // window.box = boxMesh
@@ -261,29 +282,11 @@ class BabylonLayer implements CustomLayerInterface {
 
   
     this.loadModels()
-
-    // parameters to ensure the model is georeferenced correctly on the map
-    const modelOrigin = [148.9819, -35.39847] as LngLatLike;
-    const modelAltitude = 0;
-    const modelRotate = [Math.PI / 2, 0, 0];
-    const modelCoords = mapboxgl.MercatorCoordinate.fromLngLat(
-        modelOrigin,
-        modelAltitude
-    );
-    const modelScale = modelCoords.meterInMercatorCoordinateUnits() * 10;
-
-    // console.log(modelScale)
-    this.modelMatrix = BABYLON.Matrix.Compose(
-      new BABYLON.Vector3(modelScale, modelScale, modelScale),
-      BABYLON.Quaternion.FromEulerAngles(modelRotate[0], modelRotate[1], modelRotate[2]),
-      new BABYLON.Vector3(modelCoords.x, modelCoords.y, modelCoords.z)
-    );
   }
 
   render = (gl: WebGLRenderingContext, matrix: number[]) => {
     // projection & view matrix
     const cameraMatrix = BABYLON.Matrix.FromArray(matrix);
-    const mvpMatrix = this.modelMatrix!.multiply(cameraMatrix);
     this.camera!.freezeProjectionMatrix(cameraMatrix);
 
     this.scene!.render(false);
@@ -292,109 +295,6 @@ class BabylonLayer implements CustomLayerInterface {
 }
 
 
-const example = {
-  "asset": {
-    "version": "1.0"
-  },
-  "extensionsUsed": ["3DTILES_content_gltf"],
-  "extensionsRequired": ["3DTILES_content_gltf"],
-  "geometricError": 240,
-  "root": {
-    "boundingVolume": {
-      "region": [
-          148.9820,
-          -35.3981,
-          148.9818,
-          -35.3981,
-          0,
-          88
-        ]
-    },
-    "geometricError": 70,
-    "refine": "ADD",
-    "content": {
-      "uri": "none",
-      "boundingVolume": {
-        "region": [
-          148.9820,
-          -35.3981,
-          148.9818,
-          -35.3981,
-          0,
-          88
-        ]
-      }
-    },
-    "children": [
-      {
-        "boundingVolume": {
-          "region": [
-              148.9830,
-              -35.3981,
-              148.9828,
-              -35.3981,
-              0,
-              88
-            ]
-        },
-        "geometricError": 0,
-        "content": {
-          "uri": "mesh.gltf"
-        }
-      },
-      {
-          "boundingVolume": {
-              "region": [
-                  148.9820,
-                  -35.3981,
-                  148.9818,
-                  -35.3981,
-                  0,
-                  88
-                ]
-          },
-          "geometricError": 0,
-          "content": {
-            "uri": "mesh.gltf"
-          }
-        }
-      
-    ]
-  }
-}
-function parseTilesetData(tilesetData: typeof example) {
-  const modelData: { filename:string, latitude:number, longitude:number }[] = [];
-  const rootRegion = tilesetData.root.boundingVolume.region;
-  
-  tilesetData.root.children.forEach(child => {
-    const childRegion = child.boundingVolume.region;
-    const latitude = (childRegion[1] + childRegion[3]) / 2;
-    const longitude = (childRegion[0] + childRegion[2]) / 2;
-    
-    // Skip children with zero geometricError
-    // if (child.geometricError !== 0) {
-      if (true){
-      const filename = child.content.uri;
-      modelData.push({
-        filename: filename,
-        latitude: latitude,
-        longitude: longitude
-      });
-    }
-  });
-
-  // Calculating center of the root region
-  const rootLatitude = (rootRegion[1] + rootRegion[3]) / 2;
-  const rootLongitude = (rootRegion[0] + rootRegion[2]) / 2;
-  
-  return {
-    modelData: modelData,
-    rootCenter: {
-      latitude: rootLatitude,
-      longitude: rootLongitude
-    }
-  };
-}
 
 function parseKmlData(kmlData: {
   [fileId: string]: {
