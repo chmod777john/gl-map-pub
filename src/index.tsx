@@ -82,10 +82,42 @@ class BabylonLayer implements CustomLayerInterface {
   }
 
 
+  public createAxisIndicators(mesh: BABYLON.Mesh, scale: number) {
+    // 获取 mesh 的绝对位置
+    const meshPosition = mesh.position
+  
+    // 创建X轴箭头并设置位置
+    const xAxis = BABYLON.MeshBuilder.CreateLines("xAxis", {
+      points: [meshPosition, new BABYLON.Vector3(meshPosition.x + 1, meshPosition.y, meshPosition.z)],
+      updatable: false,
+      instance: null
+    }, this.scene);
+    xAxis.color = new BABYLON.Color3(1, 0, 0);
+  
+    // 创建Y轴箭头并设置位置
+    const yAxis = BABYLON.MeshBuilder.CreateLines("yAxis", {
+      points: [meshPosition, new BABYLON.Vector3(meshPosition.x, meshPosition.y + 1, meshPosition.z)],
+      updatable: false,
+      instance: null
+    }, this.scene);
+    yAxis.color = new BABYLON.Color3(0, 1, 0);
+  
+    // 创建Z轴箭头并设置位置
+    const zAxis = BABYLON.MeshBuilder.CreateLines("zAxis", {
+      points: [meshPosition, new BABYLON.Vector3(meshPosition.x, meshPosition.y, meshPosition.z + 1)],
+      updatable: false,
+      instance: null
+    }, this.scene);
+    zAxis.color = new BABYLON.Color3(0, 0, 1);
+  }
+  
+
   public async loadModels() {
     return new Promise(async (resolve, reject) => {
 
-      const response = await axios.get('/data/Berlin_Buildings_Layer2.json'); 
+      //  把这个JSON去掉，换成一个请求，这个请求参数是当前的经纬度，返回值是一个列表
+      const response = await axios.get('/data/Berlin_Buildings_Layer2-test.json'); 
+
       // const tilesetData = response.data;
       const kmlData = response.data
 
@@ -111,16 +143,33 @@ class BabylonLayer implements CustomLayerInterface {
           const meshes = task.loadedMeshes;
   
           const modelAltitude = 0;
-          const modelCoords = mapboxgl.MercatorCoordinate.fromLngLat([longitude, latitude], modelAltitude);
+          const modelCoords = mapboxgl.MercatorCoordinate.fromLngLat({lon: longitude, lat:latitude}, modelAltitude);
           const scale = modelCoords.meterInMercatorCoordinateUnits();
   
           meshes.forEach(mesh => {
             if (mesh.id !== '__root__') return;
   
             mesh.scaling = new BABYLON.Vector3(scale, scale, scale);
-            mesh.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(Math.PI / 2, 0, 0)
+
+            // 第一个旋转：绕 X 轴旋转 Math.PI / 2（90度）
+            const rotationX = BABYLON.Quaternion.FromEulerAngles(Math.PI / 2, 0, 0);
+
+            // 第二个旋转：绕 Z 轴旋转 Math.PI / 4（45度）
+            const rotationZ = BABYLON.Quaternion.FromEulerAngles(0, 0,  -Math.PI / 4 );
+
+            // 将两个旋转组合起来
+            const combinedRotation = rotationZ.multiply(rotationX);
+
+            // 将组合后的旋转应用于 mesh
+            mesh.rotationQuaternion = combinedRotation;
+
+
             mesh.position = new BABYLON.Vector3(modelCoords.x, modelCoords.y, 0);
             // console.log(mesh.position)
+
+
+          this.createAxisIndicators(mesh,scale)
+
           });
         };
   
@@ -136,6 +185,7 @@ class BabylonLayer implements CustomLayerInterface {
       };
   
       assetsManager.onTaskError = task => {
+
         console.error(`Task error for ${task.name}:`, task.errorObject);
         reject(task.errorObject);
       };
