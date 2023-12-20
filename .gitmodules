@@ -1,0 +1,3 @@
+[submodule "3dcitydb-client"]
+	path = 3dcitydb-client
+	url = https://github.com/3dcitydb/3dcitydb-web-map
