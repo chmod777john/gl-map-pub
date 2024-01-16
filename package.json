@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "webpack serve --mode development ",
-    "build": "webpack --mode development && python ./move.py && python ./move-json.py",
-    "watch": "webpack --watch --mode development"
+    "dev": "concurrently \"node ./server.js\" \"webpack --mode=development --watch\"  \" cd ./3dcitydb-client && pnpm dev  \"",
+    "build": "webpack && python3 ./move.py && python3 ./move-json.py && cd ./3dcitydb-client && pnpm build",
+    "clean": "rm -r ./dist &&  rm -r ./3dcitydb-client/KML"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +19,7 @@
     "@types/react-dom": "^18.2.7",
     "@types/three": "^0.155.1",
     "axios": "^1.5.1",
+    "concurrently": "^8.2.2",
     "mapbox-gl": "^2.15.0",
     "npkill": "^0.11.3",
     "react": "^18.2.0",

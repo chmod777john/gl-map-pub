@@ -55,5 +55,10 @@ module.exports = {
   ],
   cache: true,
   devtool: 'inline-source-map',
-  mode: 'development'
+  mode: 'development',
+  watchOptions: {
+    aggregateTimeout: 300, // 延迟等待时间
+    poll: 3000, // 轮询间隔
+  },
+
 };

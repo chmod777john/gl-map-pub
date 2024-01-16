@@ -1,0 +1,36 @@
+FROM node:latest
+
+# 安装必要的软件和依赖项
+RUN apt-get update && apt-get install -y  git fish  vim nano
+
+
+
+# 创建非 root 用户
+ARG USERNAME=devuser
+ARG USER_UID=1001
+ARG USER_GID=$USER_UID
+
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME
+
+# 将用户添加到 sudo 组（可选）
+RUN apt-get install -y sudo \
+    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME
+
+# 切换到非 root 用户
+USER $USERNAME
+
+
+# 设置工作目录
+WORKDIR /workspace
+
+
+# 设置 fish 终端作为默认终端
+ENV SHELL /usr/bin/fish
+
+
+# 在容器启动时执行换源命令
+RUN npm config set registry  https://registry.npmmirror.com/ && yarn config set registry  https://registry.npmmirror.com/ 
+RUN sudo npm install -g pnpm npkill --loglevl=silly
+RUN sudo npm install -g bun  --loglevel=silly

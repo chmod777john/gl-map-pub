@@ -30,21 +30,23 @@ const ChildComp = ()=> {
   useEffect(()=>{
 
     (async ()=>{
+       
+ 
+      // 从URL中获取查询字符串
+      const queryString = window.location.search;
 
-      const response = await axios.get('/data/Berlin_Buildings_Layer2_collada_MasterJSON.json'); 
-      const boxData:{
-        bbox: {
-          xmin: number,
-          ymin: number
-        }
-      } = response.data;
-  
+      // 解析查询字符串以获取经纬度参数
+      const urlParams = new URLSearchParams(queryString);
+      const latitude = parseFloat(urlParams.get('lat')) || 0;
+      const longitude = parseFloat(urlParams.get('lon')) || 0;
+
+
       mapboxgl.accessToken = 'pk.eyJ1IjoiZGV2aWRlZDAiLCJhIjoiY2xsbzE3cHp5MDV4ZzNycDZyNjMxaXIxbSJ9.ZTRvdmiOwP0AG8GetebzlQ'
       const map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/light-v10',
-        zoom: 18,
-        center: [boxData.bbox.xmin ,  boxData.bbox.ymin],
+        zoom: 19,
+        center: [longitude, latitude],
         // center:[0,0],
         pitch: 60,
         antialias: true // create the gl context with MSAA antialiasing, so custom layers are antialiased
@@ -115,8 +117,17 @@ class BabylonLayer implements CustomLayerInterface {
   public async loadModels() {
     return new Promise(async (resolve, reject) => {
 
-      //  把这个JSON去掉，换成一个请求，这个请求参数是当前的经纬度，返回值是一个列表
-      const response = await axios.get('/data/Berlin_Buildings_Layer2-test.json'); 
+        // 从URL中获取查询字符串
+      const queryString = window.location.search;
+
+      // 解析查询字符串以获取经纬度参数
+      const urlParams = new URLSearchParams(queryString);
+      const latitude = parseFloat(urlParams.get('lat')) || 0;
+      const longitude = parseFloat(urlParams.get('lon')) || 0;
+
+      // 使用经纬度参数构建请求URL
+      const response = await axios.get(`http://${window.location.hostname}:5000/get_items_for_location?lat=${latitude}&lon=${longitude}`);
+
 
       // const tilesetData = response.data;
       const kmlData = response.data
@@ -149,7 +160,8 @@ class BabylonLayer implements CustomLayerInterface {
           meshes.forEach(mesh => {
             if (mesh.id !== '__root__') return;
   
-            mesh.scaling = new BABYLON.Vector3(scale, scale, scale);
+
+            mesh.position = new BABYLON.Vector3(modelCoords.x, modelCoords.y, 0);
 
             // 第一个旋转：绕 X 轴旋转 Math.PI / 2（90度）
             const rotationX = BABYLON.Quaternion.FromEulerAngles(Math.PI / 2, 0, 0);
@@ -161,14 +173,15 @@ class BabylonLayer implements CustomLayerInterface {
             const combinedRotation = rotationZ.multiply(rotationX);
 
             // 将组合后的旋转应用于 mesh
-            mesh.rotationQuaternion = combinedRotation;
+            mesh.rotationQuaternion = rotationX;
 
+            mesh.scaling = new BABYLON.Vector3(scale, scale, scale);
 
-            mesh.position = new BABYLON.Vector3(modelCoords.x, modelCoords.y, 0);
+            
             // console.log(mesh.position)
 
 
-          this.createAxisIndicators(mesh,scale)
+          // this.createAxisIndicators(mesh,scale)
 
           });
         };
@@ -213,11 +226,8 @@ class BabylonLayer implements CustomLayerInterface {
     this.scene.beforeRender = function () {
       engine.wipeCaches(true);
     };
-    this.camera = new BABYLON.Camera(
-      "mapbox-camera",
-      new BABYLON.Vector3(),
-      this.scene
-    );
+    this.camera = new BABYLON.UniversalCamera("mapbox-camera", new BABYLON.Vector3(), this.scene);
+
     const light = new BABYLON.HemisphericLight(
       "mapbox-light",
       new BABYLON.Vector3(0.5, 0.5, 4000),
@@ -356,8 +366,8 @@ function parseKmlData(kmlData: {
   const modelData: { filename:string, latitude:number, longitude:number }[] = [];
   Object.keys(kmlData).forEach(( fileId )=>{
     const envelope = kmlData[fileId].envelope 
-    const latitude = (envelope[1] + envelope[3]) / 2
-    const longitude = (envelope[0] + envelope[2]) / 2
+    const latitude = (envelope[1]) 
+    const longitude = (envelope[0])
 
     const filename = fileId + '.gltf'
 
