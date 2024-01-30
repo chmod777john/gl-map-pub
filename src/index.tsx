@@ -56,11 +56,23 @@ const ChildComp = ()=> {
 
       const origin_scale = origin_coord.meterInMercatorCoordinateUnits()
 
-      const camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0,0,10), scene);
+      const camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 10 ,0), scene);
 
-      camera.setTarget(BABYLON.Vector3.Zero());
+      camera.setTarget(new BABYLON.Vector3(10, 10, 10));
 
       const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);;
+
+
+      
+      const ground = BABYLON.Mesh.CreateGround("ground", 100000, 100000, 1, scene);
+      ground.checkCollisions= true;
+      camera.applyGravity = true;
+      scene.gravity = new BABYLON.Vector3(0, -9.81, 0);
+
+      camera.checkCollisions = true;
+      camera.ellipsoid = new BABYLON.Vector3(0.5, 1, 0.5); // 调整椭球的半径，以便在移动时防止直接贴在地面上
+      
+
 
       light.intensity = 0.7;
 
@@ -153,7 +165,8 @@ const ChildComp = ()=> {
       
     
                 
-                mesh.position = new BABYLON.Vector3(modelCoords.x /scale -origin_coord.x/origin_scale, modelCoords.y /scale -origin_coord.y / origin_scale, 0);
+                mesh.position = new BABYLON.Vector3(modelCoords.x /scale -origin_coord.x/origin_scale, 0, modelCoords.y /scale -origin_coord.y / origin_scale);
+                mesh.checkCollisions = true
     
             // 第一个旋转：绕 X 轴旋转 Math.PI / 2（90度）
             const rotationX = BABYLON.Quaternion.FromEulerAngles(Math.PI / 2, 0, 0);
@@ -165,7 +178,7 @@ const ChildComp = ()=> {
             const combinedRotation = rotationZ.multiply(rotationX);
 
             // 将组合后的旋转应用于 mesh
-            mesh.rotationQuaternion = rotationX;
+            // mesh.rotationQuaternion = rotationX;
 
                 // 将组合后的旋转应用于 mesh
                 // mesh.rotationQuaternion = rotationX;
