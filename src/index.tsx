@@ -16,10 +16,10 @@ import axios from 'axios'
 
 const App = () => {
   return <>
-    <div id='map' style={{
+    <canvas id='babylon-container' style={{
       height: 1000,
       width: 2000
-    }}></div>
+    }}></canvas>
     <ChildComp></ChildComp>
   </>;
 };
@@ -30,9 +30,21 @@ const ChildComp = ()=> {
   useEffect(()=>{
 
     (async ()=>{
-       
- 
-      // 从URL中获取查询字符串
+
+      const canvas = document.getElementById("babylon-container");
+      const engine = new BABYLON.Engine(
+        canvas,
+        true,
+        {
+          useHighPrecisionMatrix: true
+        },
+        true
+      );
+      
+      const scene = new BABYLON.Scene(engine);
+
+      window.ss = scene;
+
       const queryString = window.location.search;
 
       // 解析查询字符串以获取经纬度参数
@@ -40,22 +52,159 @@ const ChildComp = ()=> {
       const latitude = parseFloat(urlParams.get('lat')) || 0;
       const longitude = parseFloat(urlParams.get('lon')) || 0;
 
+      const origin_coord = mapboxgl.MercatorCoordinate.fromLngLat({lon: longitude, lat:latitude}, 0)
 
-      mapboxgl.accessToken = 'pk.eyJ1IjoiZGV2aWRlZDAiLCJhIjoiY2xsbzE3cHp5MDV4ZzNycDZyNjMxaXIxbSJ9.ZTRvdmiOwP0AG8GetebzlQ'
-      const map = new mapboxgl.Map({
-        container: 'map',
-        style: 'mapbox://styles/mapbox/light-v10',
-        zoom: 19,
-        center: [longitude, latitude],
-        // center:[0,0],
-        pitch: 60,
-        antialias: true // create the gl context with MSAA antialiasing, so custom layers are antialiased
-    });
-  
-      map.on('load', () => {
-        const babylonLayer = new BabylonLayer('babylon-layer-2');
-        map.addLayer(babylonLayer);
-      });
+      const origin_scale = origin_coord.meterInMercatorCoordinateUnits()
+
+      const camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0,0,10), scene);
+
+      camera.setTarget(BABYLON.Vector3.Zero());
+
+      const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);;
+
+      light.intensity = 0.7;
+
+      camera.attachControl(canvas, true);
+
+
+      function createAxisIndicators(mesh: BABYLON.Mesh, scale: number) {
+        // 获取 mesh 的绝对位置
+        const meshPosition = mesh.position
+      
+        // 创建X轴箭头并设置位置
+        const xAxis = BABYLON.MeshBuilder.CreateLines("xAxis", {
+          points: [meshPosition, new BABYLON.Vector3(meshPosition.x + 1, meshPosition.y, meshPosition.z)],
+          updatable: false,
+          instance: null
+        }, scene);
+        xAxis.color = new BABYLON.Color3(1, 0, 0);
+      
+        // 创建Y轴箭头并设置位置
+        const yAxis = BABYLON.MeshBuilder.CreateLines("yAxis", {
+          points: [meshPosition, new BABYLON.Vector3(meshPosition.x, meshPosition.y + 1, meshPosition.z)],
+          updatable: false,
+          instance: null
+        }, scene);
+        yAxis.color = new BABYLON.Color3(0, 1, 0);
+      
+        // 创建Z轴箭头并设置位置
+        const zAxis = BABYLON.MeshBuilder.CreateLines("zAxis", {
+          points: [meshPosition, new BABYLON.Vector3(meshPosition.x, meshPosition.y, meshPosition.z + 1)],
+          updatable: false,
+          instance: null
+        }, scene);
+        zAxis.color = new BABYLON.Color3(0, 0, 1);
+      }
+          // Our built-in 'sphere' shape.
+    const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 2, segments: 32}, scene);
+
+    engine.runRenderLoop(function () {
+      scene.render();
+});
+
+
+      async function loadModels() {
+        return new Promise(async (resolve, reject) => {
+    
+            // 从URL中获取查询字符串
+          const queryString = window.location.search;
+    
+          // 解析查询字符串以获取经纬度参数
+          const urlParams = new URLSearchParams(queryString);
+          const origin_latitude = parseFloat(urlParams.get('lat')) || 0;
+          const origin_longitude = parseFloat(urlParams.get('lon')) || 0;
+    
+          // 使用经纬度参数构建请求URL
+          // const response = await axios.get(`http://${window.location.hostname}:5000/get_items_for_location?lat=${latitude}&lon=${longitude}`);
+          const response = await axios.get(`http://${window.location.hostname}:5000/get_items_for_location?lat=${origin_latitude}&lon=${origin_longitude}`); 
+    
+          // const tilesetData = response.data;
+          const kmlData = response.data
+    
+          // const modD = parseTilesetData(tilesetData); // 假设有一个解析函数来处理tilesetData
+    
+          const modD = parseKmlData(kmlData)
+    
+    
+          const assetsManager = new BABYLON.AssetsManager(scene);
+    
+          let progress = 0
+    
+          modD.forEach(item => {
+            const { filename, latitude, longitude } = item;
+      
+            const meshTask = assetsManager.addMeshTask(filename, '', '/data/', filename);
+      
+            meshTask.onSuccess = task => {
+              
+              progress ++
+              console.log(progress)
+    
+              const meshes = task.loadedMeshes;
+      
+              const modelAltitude = 0;
+              const modelCoords = mapboxgl.MercatorCoordinate.fromLngLat({lon: longitude, lat:latitude}, modelAltitude);
+              console.log(modelCoords)
+              const scale = modelCoords.meterInMercatorCoordinateUnits();
+              
+              
+              meshes.forEach(mesh => {
+                if (mesh.id !== '__root__') return;
+      
+    
+                
+                mesh.position = new BABYLON.Vector3(modelCoords.x /scale -origin_coord.x/origin_scale, modelCoords.y /scale -origin_coord.y / origin_scale, 0);
+    
+            // 第一个旋转：绕 X 轴旋转 Math.PI / 2（90度）
+            const rotationX = BABYLON.Quaternion.FromEulerAngles(Math.PI / 2, 0, 0);
+
+            // 第二个旋转：绕 Z 轴旋转 Math.PI / 4（45度）
+            const rotationZ = BABYLON.Quaternion.FromEulerAngles(0, 0,  -Math.PI / 4 );
+
+            // 将两个旋转组合起来
+            const combinedRotation = rotationZ.multiply(rotationX);
+
+            // 将组合后的旋转应用于 mesh
+            mesh.rotationQuaternion = rotationX;
+
+                // 将组合后的旋转应用于 mesh
+                // mesh.rotationQuaternion = rotationX;
+    
+                // mesh.scaling = new BABYLON.Vector3(scale, scale, scale);
+    
+                
+                // console.log(mesh.position)
+    
+    
+              createAxisIndicators(mesh,scale)
+    
+              });
+            };
+      
+            meshTask.onError = (task, message, exception) => {
+              console.error(`Error loading model ${filename}:`, message, exception);
+              reject(task.errorObject);
+            };
+          });
+      
+          assetsManager.onFinish = tasks => {
+            console.log('All tasks completed successfully.');
+            resolve(tasks);
+          };
+      
+          assetsManager.onTaskError = task => {
+    
+            console.error(`Task error for ${task.name}:`, task.errorObject);
+            reject(task.errorObject);
+          };
+      
+          assetsManager.load();
+        });
+      }
+
+      await loadModels()
+
+      
 
     })()
 
@@ -69,290 +218,7 @@ const ChildComp = ()=> {
 createRoot(document.getElementById('root')!).render(<App></App>);
 
 
-class BabylonLayer implements CustomLayerInterface {
-  readonly id: string;
-  readonly type: "custom" = "custom";
-  readonly renderingMode: "3d" = "3d";
 
-  private map: Map | undefined;
-  private scene: BABYLON.Scene | undefined;
-  private camera: BABYLON.Camera | undefined;
-  private modelMatrix: BABYLON.Matrix | undefined;
-
-  constructor(id: string) {
-    this.id = id;
-  }
-
-
-  public createAxisIndicators(mesh: BABYLON.Mesh, scale: number) {
-    // 获取 mesh 的绝对位置
-    const meshPosition = mesh.position
-  
-    // 创建X轴箭头并设置位置
-    const xAxis = BABYLON.MeshBuilder.CreateLines("xAxis", {
-      points: [meshPosition, new BABYLON.Vector3(meshPosition.x + 1, meshPosition.y, meshPosition.z)],
-      updatable: false,
-      instance: null
-    }, this.scene);
-    xAxis.color = new BABYLON.Color3(1, 0, 0);
-  
-    // 创建Y轴箭头并设置位置
-    const yAxis = BABYLON.MeshBuilder.CreateLines("yAxis", {
-      points: [meshPosition, new BABYLON.Vector3(meshPosition.x, meshPosition.y + 1, meshPosition.z)],
-      updatable: false,
-      instance: null
-    }, this.scene);
-    yAxis.color = new BABYLON.Color3(0, 1, 0);
-  
-    // 创建Z轴箭头并设置位置
-    const zAxis = BABYLON.MeshBuilder.CreateLines("zAxis", {
-      points: [meshPosition, new BABYLON.Vector3(meshPosition.x, meshPosition.y, meshPosition.z + 1)],
-      updatable: false,
-      instance: null
-    }, this.scene);
-    zAxis.color = new BABYLON.Color3(0, 0, 1);
-  }
-  
-
-  public async loadModels() {
-    return new Promise(async (resolve, reject) => {
-
-        // 从URL中获取查询字符串
-      const queryString = window.location.search;
-
-      // 解析查询字符串以获取经纬度参数
-      const urlParams = new URLSearchParams(queryString);
-      const latitude = parseFloat(urlParams.get('lat')) || 0;
-      const longitude = parseFloat(urlParams.get('lon')) || 0;
-
-      // 使用经纬度参数构建请求URL
-      const response = await axios.get(`http://${window.location.hostname}:5000/get_items_for_location?lat=${latitude}&lon=${longitude}`);
-
-
-      // const tilesetData = response.data;
-      const kmlData = response.data
-
-      // const modD = parseTilesetData(tilesetData); // 假设有一个解析函数来处理tilesetData
-
-      const modD = parseKmlData(kmlData)
-
-
-      const assetsManager = new BABYLON.AssetsManager(this.scene);
-
-      let progress = 0
-
-      modD.forEach(item => {
-        const { filename, latitude, longitude } = item;
-  
-        const meshTask = assetsManager.addMeshTask(filename, '', '/data/', filename);
-  
-        meshTask.onSuccess = task => {
-          
-          progress ++
-          console.log(progress)
-
-          const meshes = task.loadedMeshes;
-  
-          const modelAltitude = 0;
-          const modelCoords = mapboxgl.MercatorCoordinate.fromLngLat({lon: longitude, lat:latitude}, modelAltitude);
-          const scale = modelCoords.meterInMercatorCoordinateUnits();
-  
-          meshes.forEach(mesh => {
-            if (mesh.id !== '__root__') return;
-  
-
-            mesh.position = new BABYLON.Vector3(modelCoords.x, modelCoords.y, 0);
-
-            // 第一个旋转：绕 X 轴旋转 Math.PI / 2（90度）
-            const rotationX = BABYLON.Quaternion.FromEulerAngles(Math.PI / 2, 0, 0);
-
-            // 第二个旋转：绕 Z 轴旋转 Math.PI / 4（45度）
-            const rotationZ = BABYLON.Quaternion.FromEulerAngles(0, 0,  -Math.PI / 4 );
-
-            // 将两个旋转组合起来
-            const combinedRotation = rotationZ.multiply(rotationX);
-
-            // 将组合后的旋转应用于 mesh
-            mesh.rotationQuaternion = rotationX;
-
-            mesh.scaling = new BABYLON.Vector3(scale, scale, scale);
-
-            
-            // console.log(mesh.position)
-
-
-          // this.createAxisIndicators(mesh,scale)
-
-          });
-        };
-  
-        meshTask.onError = (task, message, exception) => {
-          console.error(`Error loading model ${filename}:`, message, exception);
-          reject(task.errorObject);
-        };
-      });
-  
-      assetsManager.onFinish = tasks => {
-        console.log('All tasks completed successfully.');
-        resolve(tasks);
-      };
-  
-      assetsManager.onTaskError = task => {
-
-        console.error(`Task error for ${task.name}:`, task.errorObject);
-        reject(task.errorObject);
-      };
-  
-      assetsManager.load();
-    });
-  }
-  
-  
-
-  onAdd = (map: Map, gl: WebGLRenderingContext) => {
-    this.map = map;
-    const engine = new BABYLON.Engine(
-      gl,
-      true,
-      {
-        useHighPrecisionMatrix: true
-      },
-      true
-    );
-
-    this.scene = new BABYLON.Scene(engine);
-    this.scene.autoClear = false;
-    this.scene.detachControl();
-    this.scene.beforeRender = function () {
-      engine.wipeCaches(true);
-    };
-    this.camera = new BABYLON.UniversalCamera("mapbox-camera", new BABYLON.Vector3(), this.scene);
-
-    const light = new BABYLON.HemisphericLight(
-      "mapbox-light",
-      new BABYLON.Vector3(0.5, 0.5, 4000),
-      this.scene
-    );
-
-
-  
-    // const boxCoord = mapboxgl.MercatorCoordinate.fromLngLat(
-    //   [13.381, 52.532],
-    //   // [0,0],
-    //   // 200
-    // );
-    // const boxMesh = BABYLON.MeshBuilder.CreateBox(
-    //   "box",
-    //   {
-    //     // size: 10 * boxCoord.meterInMercatorCoordinateUnits()
-    //     size: 30
-    //   },
-    //   this.scene
-    // );
-    // console.log(boxCoord.meterInMercatorCoordinateUnits())
-    // boxMesh.position = new BABYLON.Vector3(boxCoord.x, boxCoord.y, boxCoord.z);
-
-    // const sphereCoord = mapboxgl.MercatorCoordinate.fromLngLat(
-    //   [13.3, 52.5],
-    //   // 400
-    // );
-    // const sphereMesh = BABYLON.MeshBuilder.CreateSphere(
-    //   "sphere",
-    //   {
-    //     // diameter: 30 * sphereCoord.meterInMercatorCoordinateUnits()
-    //     diameter: 30
-    //   },
-    //   this.scene
-    // );
-    // sphereMesh.position = new BABYLON.Vector3(
-    //   sphereCoord.x,
-    //   sphereCoord.y,
-    //   sphereCoord.z
-    // );
-
-    // const cone = BABYLON.MeshBuilder.CreateCylinder("cone", { height: 20, diameterTop: 10, diameterBottom: 20, tessellation: 40 }, this.scene);
-
-    // const coneCoord = mapboxgl.MercatorCoordinate.fromLngLat(
-    //   [13.381455644224731, 52.532437942637095]
-    // )
-    // cone.position = new BABYLON.Vector3(
-    //   coneCoord.x,
-    //   coneCoord.y,
-    //   coneCoord.z
-    // )
-
-    // const modelOrigin = [13.381455644224731, 52.532437942637095] as LngLatLike;
-    // // 计算模型的初始位置
-    // const modelAltitude = 0;
-    // const modelCoords = mapboxgl.MercatorCoordinate.fromLngLat(modelOrigin, modelAltitude);
-
-    // const scale = modelCoords.meterInMercatorCoordinateUnits()
-
-
-    // const group = [boxMesh, sphereMesh, cone]
-    // group.map(( mesh )=>{
-      
-    //   // mesh.position = new BABYLON.Vector3(
-    //   //   modelCoords.x,
-    //   //   modelCoords.y,
-    //   // )
-    //   mesh.scaling = new BABYLON.Vector3(scale, scale, scale)
-    //   mesh.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(Math.PI / 2, 0, 0)
-    // })
-
-
-
-    // console.log(sphereMesh.position)
-    // window.box = boxMesh
-    // window.sp = sphereMesh
-    window.camera = this.camera
-    window.babylon = BABYLON
-    window.ss  = this.scene
-
-    // BABYLON.SceneLoader.Append("/", "TORONTO3D_mesh_2.gltf", this.scene, (results) => {
-    //   // 获取导入的模型对象
-    //   const meshes = results.meshes;
-    //   const modelOrigin = [148.9819, -35.3981] as LngLatLike;
-    //   // 计算模型的初始位置
-    //   const modelAltitude = 0;
-    //   const modelCoords = mapboxgl.MercatorCoordinate.fromLngLat(modelOrigin, modelAltitude);
-  
-    //   // 处理缩放
-    //   const scale = modelCoords.meterInMercatorCoordinateUnits()
-
-    //   console.log(meshes.length, 'l')
-    //   meshes.map(( mesh )=>{
-
-    //     // mesh 可以是刚刚加载进来的gltf  也可以是别处的圆或者方块；  圆和方块要保持不变，我们只想要设置 gltf 的 position 
-    //     if (mesh.id !== '__root__') return
-
-    //     console.log('the scale', scale)
-    //     mesh.scaling = new BABYLON.Vector3(scale, scale, scale)
-    //     mesh.position = new BABYLON.Vector3(
-    //       modelCoords.x,
-    //       modelCoords.y,
-    //       0
-    //     )
-    //   })
-
-    //   console.log(meshes[0].getBoundingInfo(), 'info')
-
-    //   // 将模型移动到合适的位置
-    // });
-
-  
-    this.loadModels()
-  }
-
-  render = (gl: WebGLRenderingContext, matrix: number[]) => {
-    // projection & view matrix
-    const cameraMatrix = BABYLON.Matrix.FromArray(matrix);
-    this.camera!.freezeProjectionMatrix(cameraMatrix);
-
-    this.scene!.render(false);
-    this.map!.triggerRepaint();
-  }
-}
 
 
 
