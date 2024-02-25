@@ -11,6 +11,8 @@ import "@babylonjs/loaders";
 import { CustomLayerInterface, LngLatLike } from 'mapbox-gl';
 
 import axios from 'axios'
+
+import earcut from 'earcut'
 //import './mapbox-gl.css'
 
 
@@ -42,6 +44,8 @@ const ChildComp = ()=> {
       );
       
       const scene = new BABYLON.Scene(engine);
+      scene.collisionsEnabled = true;
+
 
       window.ss = scene;
 
@@ -57,20 +61,27 @@ const ChildComp = ()=> {
       const origin_scale = origin_coord.meterInMercatorCoordinateUnits()
 
       const camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 10 ,0), scene);
+      const observe_camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 300 ,0), scene);
+      
 
       camera.setTarget(new BABYLON.Vector3(10, 10, 10));
+      observe_camera.setTarget(new BABYLON.Vector3(0, 0, 0));
+      observe_camera.viewport = new BABYLON.Viewport(0.8, 0.8, 0.2, 0.2);
 
-      const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);;
+      scene.activeCameras = [camera, observe_camera];
+
+      const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 1), scene);;
 
 
       
       const ground = BABYLON.Mesh.CreateGround("ground", 100000, 100000, 1, scene);
       ground.checkCollisions= true;
+
       camera.applyGravity = true;
       scene.gravity = new BABYLON.Vector3(0, -9.81, 0);
 
       camera.checkCollisions = true;
-      camera.ellipsoid = new BABYLON.Vector3(0.5, 1, 0.5); // 调整椭球的半径，以便在移动时防止直接贴在地面上
+      camera.ellipsoid = new BABYLON.Vector3(1, 1, 1); // 调整椭球的半径，以便在移动时防止直接贴在地面上
       
 
 
@@ -78,6 +89,51 @@ const ChildComp = ()=> {
 
       camera.attachControl(canvas, true);
 
+
+      // const character_builder = new BABYLON.PolygonMeshBuilder("polygon", 
+          // [new BABYLON.Vector3(1, 0, 0),
+          // new BABYLON.Vector3(-1, 0, 0),
+          // new BABYLON.Vector3(0, 0, 10 )],
+          // scene, earcut
+      // );
+
+      // const character = character_builder.build()
+
+      const character = BABYLON.MeshBuilder.CreatePolygon("polygon", {
+        shape: [new BABYLON.Vector3(1, 0, 0),
+          new BABYLON.Vector3(-1, 0, 0),
+          new BABYLON.Vector3(0, 0, 10 )],
+      }, scene, earcut
+      )
+      
+  
+      const material = new BABYLON.StandardMaterial("material", scene);
+      material.diffuseColor = new BABYLON.Color3(0, 1, 0); // 设置为绿色
+      
+      character.material = material
+      character.scaling = new BABYLON.Vector3(10, 10,10)
+      character.material = material
+      // character.parent = camera
+
+      window.this_box = character
+
+
+      character.layerMask = 0x0000FFFF
+      camera.layerMask = 0xFFFF0000
+      observe_camera.layerMask = 0x000FF000
+
+      scene.onBeforeRenderObservable.add(()=>{
+
+        camera.rotation
+        
+        const direction = new BABYLON.Vector3(0, 0, 1)
+        // character.lookAt(new BABYLON.Vector3(cam_direction.x, 0, cam_direction.z))
+        character.position = camera.position.clone()
+        character.position.y = 10
+
+        observe_camera.position = camera.position.clone()
+        observe_camera.position.y = 300
+      })
 
       function createAxisIndicators(mesh: BABYLON.Mesh, scale: number) {
         // 获取 mesh 的绝对位置
@@ -108,7 +164,8 @@ const ChildComp = ()=> {
         zAxis.color = new BABYLON.Color3(0, 0, 1);
       }
           // Our built-in 'sphere' shape.
-    const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 2, segments: 32}, scene);
+    const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 10, segments: 32}, scene);
+    sphere.checkCollisions = true
 
     engine.runRenderLoop(function () {
       scene.render();
@@ -161,12 +218,13 @@ const ChildComp = ()=> {
               
               
               meshes.forEach(mesh => {
+                mesh.checkCollisions = true
                 if (mesh.id !== '__root__') return;
       
     
                 
                 mesh.position = new BABYLON.Vector3(modelCoords.x /scale -origin_coord.x/origin_scale, 0, modelCoords.y /scale -origin_coord.y / origin_scale);
-                mesh.checkCollisions = true
+                
     
             // 第一个旋转：绕 X 轴旋转 Math.PI / 2（90度）
             const rotationX = BABYLON.Quaternion.FromEulerAngles(Math.PI / 2, 0, 0);
