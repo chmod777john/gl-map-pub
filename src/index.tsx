@@ -73,7 +73,10 @@ const ChildComp = ()=> {
       scene.activeCameras = [camera, observe_camera];
 
       const light = new BABYLON.DirectionalLight("dir01", new BABYLON.Vector3(0, -1, 1), scene);
-      light.position = new BABYLON.Vector3(0, 15, -30);
+      light.position = new BABYLON.Vector3(0, 1500, -30);
+
+      const light2 = new BABYLON.HemisphericLight('light2', new BABYLON.Vector3(0, 10, 10), scene)
+      light2.intensity = 0.7
 
       const shadowGenerator = new BABYLON.ShadowGenerator(4096, light);
       
@@ -90,6 +93,7 @@ const ChildComp = ()=> {
 
 
       light.intensity = 0.7;
+
       light.shadowEnabled = true;
 
       camera.attachControl(canvas, true);
@@ -224,10 +228,14 @@ const ChildComp = ()=> {
               
               meshes.forEach(mesh => {
                 shadowGenerator.addShadowCaster(mesh, true)
+                
                 mesh.checkCollisions = true
-                if (mesh.id !== '__root__') return;
+                if (mesh.id !== '__root__') {
+                  
+                  return
+                }
       
-    
+                mesh.receiveShadows = true
                 
                 mesh.position = new BABYLON.Vector3(modelCoords.x /scale -origin_coord.x/origin_scale, 0, modelCoords.y /scale -origin_coord.y / origin_scale);
                 
