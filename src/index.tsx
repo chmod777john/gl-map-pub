@@ -62,11 +62,12 @@ const ChildComp = ()=> {
 
       const origin_scale = origin_coord.meterInMercatorCoordinateUnits()
 
-      const camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 10 ,0), scene);
+      const camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 100 ,0), scene);
       const observe_camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 300 ,0), scene);
       
 
-      camera.setTarget(new BABYLON.Vector3(10, 10, 10));
+      camera.setTarget(new BABYLON.Vector3(0, -1, 0));
+      
       observe_camera.setTarget(new BABYLON.Vector3(0, 0, 0));
       observe_camera.viewport = new BABYLON.Viewport(0.8, 0.8, 0.2, 0.2);
 
@@ -108,14 +109,19 @@ const ChildComp = ()=> {
 
       // const character = character_builder.build()
 
-      const character = BABYLON.MeshBuilder.CreatePolygon("polygon", {
+      var character = BABYLON.MeshBuilder.CreatePolygon("polygon", {
         shape: [new BABYLON.Vector3(1, 0, 0),
           new BABYLON.Vector3(-1, 0, 0),
           new BABYLON.Vector3(0, 0, 10 )],
       }, scene, earcut
       )
       
+      const line = BABYLON.MeshBuilder.CreateLines("zAxis", {
+        points: [new BABYLON.Vector3(0,0,0), new BABYLON.Vector3(0, 0, 100)],
+    }, scene);
+    line.color = new BABYLON.Color3(0, 0, 1);
   
+
       const material = new BABYLON.StandardMaterial("material", scene);
       material.diffuseColor = new BABYLON.Color3(0, 1, 0); // 设置为绿色
       
@@ -128,6 +134,7 @@ const ChildComp = ()=> {
 
 
       character.layerMask = 0x0000FFFF
+      line.layerMask = character.layerMask
       camera.layerMask = 0xFFFF0000
       observe_camera.layerMask = 0x000FF000
 
@@ -136,12 +143,29 @@ const ChildComp = ()=> {
         camera.rotation
         
         const direction = new BABYLON.Vector3(0, 0, 1)
+
+        // character = line
+
         // character.lookAt(new BABYLON.Vector3(cam_direction.x, 0, cam_direction.z))
-        character.position = camera.position.clone()
-        character.position.y = 10
+        line.position = camera.position.clone()
+        line.position.y = 10
+
+        // character.rotation = camera.rotation
+
+        const _vec = new BABYLON.Vector3(0, 0, 1)
+        
+        let {x, y, z} = camera.rotation
+
+        _vec.applyRotationQuaternionInPlace(BABYLON.Quaternion.FromEulerAngles(x, y, z))
+
+        
+
+        line.lookAt(new BABYLON.Vector3(_vec.x + line.position.x, line.position.y, _vec.z + line.position.z))
 
         observe_camera.position = camera.position.clone()
         observe_camera.position.y = 300
+        // line.rotation = camera.rotation
+        // console.log('the cam dir', camera.rotation)
       })
 
       function createAxisIndicators(mesh: BABYLON.Mesh, scale: number) {
@@ -175,6 +199,9 @@ const ChildComp = ()=> {
           // Our built-in 'sphere' shape.
     const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 10, segments: 32}, scene);
     sphere.checkCollisions = true
+
+
+
 
     engine.runRenderLoop(function () {
       scene.render();
