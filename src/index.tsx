@@ -109,18 +109,18 @@ const ChildComp = ()=> {
 
       // const character = character_builder.build()
 
-      var character = BABYLON.MeshBuilder.CreatePolygon("polygon", {
-        shape: [new BABYLON.Vector3(1, 0, 0),
-          new BABYLON.Vector3(-1, 0, 0),
-          new BABYLON.Vector3(0, 0, 10 )],
-      }, scene, earcut
-      )
+      // var character = BABYLON.MeshBuilder.CreatePolygon("polygon", {
+      //   shape: [new BABYLON.Vector3(1, 0, 0),
+      //     new BABYLON.Vector3(-1, 0, 0),
+      //     new BABYLON.Vector3(0, 0, 10 )],
+      // }, scene, earcut
+      // )
       
-      const line = BABYLON.MeshBuilder.CreateLines("zAxis", {
-        points: [new BABYLON.Vector3(0,0,0), new BABYLON.Vector3(0, 0, 100)],
+      const character = BABYLON.MeshBuilder.CreateLines("zAxis", {
+        points: [new BABYLON.Vector3(0,0,0), new BABYLON.Vector3(0, 0, 10)],
     }, scene);
-    line.color = new BABYLON.Color3(0, 0, 1);
   
+      
 
       const material = new BABYLON.StandardMaterial("material", scene);
       material.diffuseColor = new BABYLON.Color3(0, 1, 0); // 设置为绿色
@@ -134,7 +134,6 @@ const ChildComp = ()=> {
 
 
       character.layerMask = 0x0000FFFF
-      line.layerMask = character.layerMask
       camera.layerMask = 0xFFFF0000
       observe_camera.layerMask = 0x000FF000
 
@@ -147,8 +146,8 @@ const ChildComp = ()=> {
         // character = line
 
         // character.lookAt(new BABYLON.Vector3(cam_direction.x, 0, cam_direction.z))
-        line.position = camera.position.clone()
-        line.position.y = 10
+        character.position = camera.position.clone()
+        character.position.y = 10
 
         // character.rotation = camera.rotation
 
@@ -160,7 +159,7 @@ const ChildComp = ()=> {
 
         
 
-        line.lookAt(new BABYLON.Vector3(_vec.x + line.position.x, line.position.y, _vec.z + line.position.z))
+        character.lookAt(new BABYLON.Vector3(_vec.x + character.position.x, character.position.y, _vec.z + character.position.z))
 
         observe_camera.position = camera.position.clone()
         observe_camera.position.y = 300
