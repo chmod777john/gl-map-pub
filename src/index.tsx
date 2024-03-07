@@ -109,16 +109,14 @@ const ChildComp = ()=> {
 
       // const character = character_builder.build()
 
-      // var character = BABYLON.MeshBuilder.CreatePolygon("polygon", {
-      //   shape: [new BABYLON.Vector3(1, 0, 0),
-      //     new BABYLON.Vector3(-1, 0, 0),
-      //     new BABYLON.Vector3(0, 0, 10 )],
-      // }, scene, earcut
-      // )
+      const character = BABYLON.MeshBuilder.CreatePolygon("polygon", {
+        shape: [new BABYLON.Vector3(1, 0, 0),
+          new BABYLON.Vector3(-1, 0, 0),
+          new BABYLON.Vector3(0, 0, 10 )],
+      }, scene, earcut
+      )
       
-      const character = BABYLON.MeshBuilder.CreateLines("zAxis", {
-        points: [new BABYLON.Vector3(0,0,0), new BABYLON.Vector3(0, 0, 10)],
-    }, scene);
+      // const character = BABYLON.MeshBuilder.CreateCylinder("cone", { height: 10, diameterTop: 0, diameterBottom: 10 }, scene);;
   
       
 
@@ -159,7 +157,7 @@ const ChildComp = ()=> {
 
         
 
-        character.lookAt(new BABYLON.Vector3(_vec.x + character.position.x, character.position.y, _vec.z + character.position.z))
+        character.lookAt(new BABYLON.Vector3(_vec.x + character.position.x, character.position.y, _vec.z + character.position.z), 0 ,0 , Math.PI/4)
 
         observe_camera.position = camera.position.clone()
         observe_camera.position.y = 300
@@ -198,9 +196,6 @@ const ChildComp = ()=> {
           // Our built-in 'sphere' shape.
     const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 10, segments: 32}, scene);
     sphere.checkCollisions = true
-
-
-
 
     engine.runRenderLoop(function () {
       scene.render();
