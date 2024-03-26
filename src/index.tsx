@@ -211,6 +211,10 @@ const ChildComp = ()=> {
     const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 10, segments: 32}, scene);
     sphere.checkCollisions = true
 
+
+    var hdrTexture = new BABYLON.CubeTexture("SpecularHDR.dds", scene);
+    scene.createDefaultSkybox(hdrTexture, true, 10000);
+
     engine.runRenderLoop(function () {
       scene.render();
     });
