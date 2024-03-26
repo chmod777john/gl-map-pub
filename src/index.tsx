@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+
 import { createRoot } from 'react-dom/client';
 import * as mapboxgl from 'mapbox-gl';
 
@@ -27,6 +28,8 @@ const App = () => {
 };
 
 const ChildComp = ()=> {
+  const [currentFilename, setCurrentFilename] = useState(null);
+  const [showDiv, setShowDiv] = useState(false);
 
 
   useEffect(() => {
@@ -39,6 +42,7 @@ const ChildComp = ()=> {
       },
       true
     );
+    engine.antialiasing
 
     const scene = new BABYLON.Scene(engine);
     scene.collisionsEnabled = true
@@ -64,7 +68,11 @@ const ChildComp = ()=> {
       if (!mesh.add_name)
         return
 
-      console.log(mesh.add_name)
+        const { filename } = mesh.add_name
+        console.log(filename)
+        if (!(currentFilename === filename))
+          setCurrentFilename(filename)
+
     }
 
     const observe_camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 300, 0), scene);
@@ -83,7 +91,9 @@ const ChildComp = ()=> {
     const light2 = new BABYLON.HemisphericLight('light2', new BABYLON.Vector3(0, 10, 10), scene)
     light2.intensity = 0.7
 
-    const shadowGenerator = new BABYLON.ShadowGenerator(4096, light);
+    const shadowGenerator = new BABYLON.ShadowGenerator(4096 , light);
+    // shadowGenerator.filter = BABYLON.ShadowGenerator.FILTER_PCF;
+    window.shadow = shadowGenerator
 
     const ground = BABYLON.Mesh.CreateGround("ground", 100000, 100000, 1, scene);
     ground.checkCollisions= true;
@@ -326,8 +336,25 @@ const ChildComp = ()=> {
     return
   }, [])
 
-  return <>
-  </>
+  return (
+    <>
+      {true && (
+        <div style={{
+          position: 'absolute',
+          top: 10,
+          left: 10,
+          padding: '5px 10px',
+          borderRadius: 5,
+          zIndex: 9999,
+          color: 'red',
+          fontSize: 32
+        }}>
+          ID: {currentFilename}
+        </div>
+      )}
+    </>
+  );
+
 }
 
 
