@@ -16,6 +16,6 @@
 		"ghcr.io/devcontainers-contrib/features/terraform-asdf:2": {
 			"version": "latest"
 		}
-	}
-
+	},
+	"onCreateCommand": "bash scripts/onCreate.sh"
 }
