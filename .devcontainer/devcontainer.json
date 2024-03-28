@@ -1,20 +1,21 @@
 {
-    "build": { 
-      "dockerfile": "Dockerfile"
-  
-  },
-    "customizations": {
-      "vscode": {
-        "settings": {
-          "terminal.integrated.shell.linux": "/bin/bash",
-          "remote.containers.runArgs": ["-u", "node"]
-        }
-      }
-    },
-    "containerEnv": {
-      // "http_proxy": "http://host.docker.internal:7890/",
-      // "https_proxy": "http://host.docker.internal:7890/"
-      // "ftp_proxy": "http://127.0.0.1:7890/"
-    }
-  }
-  
+	"name": "Ubuntu",
+	"image": "mcr.microsoft.com/devcontainers/base:jammy",
+	"features": {
+		"ghcr.io/devcontainers/features/conda:1": {
+			"version": "latest"
+		},
+		"ghcr.io/devcontainers/features/node:1": {
+			"nodeGypDependencies": true,
+			"version": "lts",
+			"nvmVersion": "latest"
+		},
+		"ghcr.io/devcontainers-contrib/features/infracost:1": {
+			"version": "latest"
+		},
+		"ghcr.io/devcontainers-contrib/features/terraform-asdf:2": {
+			"version": "latest"
+		}
+	}
+
+}
