@@ -7,8 +7,8 @@
     "prepare": "bash scripts/prepare.sh",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "concurrently \"node ./server.js\" \"webpack --mode=development --watch\"  \" cd ./3dcitydb-client && pnpm dev  \"",
-    "build": "webpack && python3 ./move.py && python3 ./move-json.py && cd ./3dcitydb-client && pnpm build",
-    "clean": "rm -r ./dist &&  rm -r ./3dcitydb-client/KML"
+    "build": "webpack && bash scripts/build.sh",
+    "clean": "bash scripts/clean.sh"
   },
   "keywords": [],
   "author": "",
@@ -21,6 +21,7 @@
     "@types/three": "^0.155.1",
     "axios": "^1.5.1",
     "concurrently": "^8.2.2",
+    "earcut": "^2.2.4",
     "husky": "^9.0.11",
     "mapbox-gl": "^2.15.0",
     "npkill": "^0.11.3",

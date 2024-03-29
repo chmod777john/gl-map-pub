@@ -1,6 +1,5 @@
 node_modules/
 .pnpm-store/
 dist/
-KML/
-Berlin_Centre/
-Berlin_Centre.zip
+resources/
+private_key

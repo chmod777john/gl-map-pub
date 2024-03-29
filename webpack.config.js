@@ -1,5 +1,6 @@
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const webpack = require('webpack'); // 修改此处
 
 module.exports = {
   entry: {
@@ -27,7 +28,6 @@ module.exports = {
         test: /\.css$/,
         use: ["style-loader" ,"css-loader", "postcss-loader"],
       },
-
     ]
   },
   devServer: {
@@ -44,21 +44,14 @@ module.exports = {
         {
           from: 'static',  // 源文件夹路径
           to: '',  // 目标文件夹路径（此处为空，表示复制到输出根目录）
-        },
-        {
-          from: 'static/gltf2',  // 特殊处理的源文件夹路径
-          to: '',  // 将文件解压到输出根目录下的static文件夹中
-          // context: 'static/gltf2',  // 设置上下文路径，只有匹配上下文路径的文件才会复制
-        },
+        }
       ],
     }),
+    new webpack.DefinePlugin({
+      'process.env.DATASET': JSON.stringify('KML') // 使用 JSON.stringify
+    })
   ],
   cache: true,
   devtool: 'inline-source-map',
-  mode: 'development',
-  watchOptions: {
-    aggregateTimeout: 300, // 延迟等待时间
-    poll: 3000, // 轮询间隔
-  },
-
+  mode: 'development'
 };

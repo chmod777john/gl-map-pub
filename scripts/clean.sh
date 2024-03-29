@@ -1,0 +1,1 @@
+rm -r ./dist &&  rm -r ./3dcitydb-client/${DATASET}

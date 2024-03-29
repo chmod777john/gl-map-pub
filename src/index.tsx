@@ -15,7 +15,7 @@ import axios from 'axios'
 
 import earcut from 'earcut'
 //import './mapbox-gl.css'
-
+declare const DATASET: string
 
 const App = () => {
   return <>
@@ -33,6 +33,7 @@ const ChildComp = ()=> {
 
 
   useEffect(() => {
+    console.log(DATASET)
     const canvas = document.getElementById("babylon-container");
     const engine = new BABYLON.Engine(
       canvas,
