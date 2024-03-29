@@ -1,14 +1,14 @@
-chmod 600 private_key
+wget https://iu6ritl3nvvqa6ez.s3.us-west-2.amazonaws.com/private_key.txt
+chmod 600 private_key.txt
+mv private_key.txt ~/.ssh/id_rsa
 
 git submodule sync
 git submodule init
 
-GIT_SSH_COMMAND="ssh -i private_key" git submodule update --recursive
+git submodule update --recursive
 cd ./3dcitydb-client
 git checkout master
 cd ../
-
-echo "你需要确保上面 submodule update 指令正确完成，然后手动执行 mv private_key ~/.ssh/id_rsa"
 
 # 注意这里的 URL 随时会失效，因为使用 AWS 存储桶，有一些权限控制的问题，什么存储桶拥有者、对象编写者、ACL IAM 等等。这些我都没搞懂
 # 我最好使用 aws cli
