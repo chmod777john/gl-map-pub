@@ -48,7 +48,7 @@ module.exports = {
       ],
     }),
     new webpack.DefinePlugin({
-      'process.env.DATASET': JSON.stringify('KML') // 使用 JSON.stringify
+      DATASET: JSON.stringify('KML') // 使用 JSON.stringify
     })
   ],
   cache: true,

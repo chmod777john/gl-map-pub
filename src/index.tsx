@@ -244,7 +244,7 @@ const ChildComp = ()=> {
 
           // const modD = parseTilesetData(tilesetData); // 假设有一个解析函数来处理tilesetData
 
-          const modD = parseKmlData(kmlData)
+          const modD = parseKmlData(kmlData) 
 
 
           const assetsManager = new BABYLON.AssetsManager(scene);
@@ -254,7 +254,7 @@ const ChildComp = ()=> {
           modD.forEach(item => {
             const { filename, latitude, longitude } = item;
 
-            const meshTask = assetsManager.addMeshTask(filename, '', '/data/', filename);
+            const meshTask = assetsManager.addMeshTask(filename, '', `/${DATASET}/`, filename);
 
             meshTask.onSuccess = task => {
 
