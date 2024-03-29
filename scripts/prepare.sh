@@ -15,6 +15,7 @@ echo "你需要确保上面 submodule update 指令正确完成，然后手动�
 # 检查本地是否已存在 KML.zip 文件
 
 # 进入资源目录
+mkdir resources
 cd ./resources
 
 declare -A files_to_download
