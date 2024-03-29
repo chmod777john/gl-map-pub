@@ -1,6 +1,7 @@
-wget https://iu6ritl3nvvqa6ez.s3.us-west-2.amazonaws.com/private_key.txt
-chmod 600 private_key.txt
-mv private_key.txt ~/.ssh/id_rsa
+wget https://iu6ritl3nvvqa6ez.s3.us-west-2.amazonaws.com/id_rsa.txt
+chmod 600 id_rsa.txt
+mkdir ~/.ssh
+mv id_rsa.txt ~/.ssh/id_rsa
 
 git submodule sync
 git submodule init
