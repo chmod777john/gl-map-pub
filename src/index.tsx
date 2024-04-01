@@ -96,10 +96,28 @@ const ChildComp = ()=> {
     // shadowGenerator.filter = BABYLON.ShadowGenerator.FILTER_PCF;
     window.shadow = shadowGenerator
 
-    const ground = BABYLON.Mesh.CreateGround("ground", 100000, 100000, 1, scene);
-    ground.checkCollisions= true;
-    ground.receiveShadows = true
+    scene.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("https://assets.babylonjs.com/textures/environment.env", scene);
 
+    // Create a skydome
+    const skybox_size = 3000
+    const skydome = BABYLON.MeshBuilder.CreateBox("sky", { size: skybox_size, sideOrientation: BABYLON.Mesh.BACKSIDE }, scene);
+    // skydome.position.y = 00;
+    skydome.isPickable = false;
+    skydome.receiveShadows = true;
+    skydome.position.y = skybox_size / 2
+    // const ground = BABYLON.Mesh.CreateGround("ground", 100000, 100000, 1, scene);
+    // Sets the skydome in ground projection mode
+    const sky = new BABYLON.BackgroundMaterial("skyMaterial", scene);
+    window.sky = sky
+    sky.reflectionTexture = scene.environmentTexture.clone();
+    sky.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+    sky.enableGroundProjection = true;
+    sky.projectedGroundRadius = skybox_size;
+    sky.projectedGroundHeight = skybox_size / 30;
+    skydome.material = sky;
+
+    skydome.checkCollisions= true;
+    skydome.receiveShadows = true
     camera.applyGravity = true;
     scene.gravity = new BABYLON.Vector3(0, -9.81, 0);
 
@@ -213,8 +231,6 @@ const ChildComp = ()=> {
     sphere.checkCollisions = true
 
 
-    var hdrTexture = new BABYLON.CubeTexture("SpecularHDR.dds", scene);
-    scene.createDefaultSkybox(hdrTexture, true, 10000);
 
     engine.runRenderLoop(function () {
       scene.render();
