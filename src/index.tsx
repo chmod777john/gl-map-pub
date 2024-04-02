@@ -96,8 +96,6 @@ const ChildComp = ()=> {
     // shadowGenerator.filter = BABYLON.ShadowGenerator.FILTER_PCF;
     window.shadow = shadowGenerator
 
-    scene.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("https://assets.babylonjs.com/textures/environment.env", scene);
-
     // Create a skydome
     const skybox_size = 3000
     const skydome = BABYLON.MeshBuilder.CreateBox("sky", { size: skybox_size, sideOrientation: BABYLON.Mesh.BACKSIDE }, scene);
@@ -109,7 +107,7 @@ const ChildComp = ()=> {
     // Sets the skydome in ground projection mode
     const sky = new BABYLON.BackgroundMaterial("skyMaterial", scene);
     window.sky = sky
-    sky.reflectionTexture = scene.environmentTexture.clone();
+    sky.reflectionTexture = new BABYLON.CubeTexture("https://assets.babylonjs.com/textures/skybox", scene);
     sky.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
     sky.enableGroundProjection = true;
     sky.projectedGroundRadius = skybox_size;
