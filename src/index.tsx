@@ -64,7 +64,7 @@ const ChildComp = ()=> {
 
     const origin_scale = origin_coord.meterInMercatorCoordinateUnits()
 
-    const camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 100 ,0), scene);
+    const camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(10, 3 ,10), scene);
     camera.onCollide = (mesh)=>{
       if (!mesh.add_name)
         return
