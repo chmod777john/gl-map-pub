@@ -38,3 +38,11 @@ for file in "${!files_to_download[@]}"; do
     wget -P ./ "$url"
   fi
 done
+
+
+# 下载信息表
+wget https://iu6ritl3nvvqa6ez.s3.us-west-2.amazonaws.com/Berlin_Centre_Attributes.csv
+wget https://iu6ritl3nvvqa6ez.s3.us-west-2.amazonaws.com/KML.csv
+
+mv ./KML.csv ../3dcitydb-client/KML.csv
+mv ./Berlin_Centre_Attributes.csv ../3dcitydb-client/Berlin_Centre.csv
