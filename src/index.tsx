@@ -236,7 +236,9 @@ const ChildComp = ()=> {
 
 
     (async () => {
-
+      const startTime = performance.now(); // 获取开始加载时间
+      const startMemory = performance.memory.usedJSHeapSize; // 获取加载前的内存使用情况
+      console.log('Memory before loading:', startMemory, 'bytes');
 
       async function loadModels() {
         return new Promise(async (resolve, reject) => {
@@ -333,6 +335,19 @@ const ChildComp = ()=> {
 
           assetsManager.onFinish = tasks => {
             console.log('All tasks completed successfully.');
+
+            const endTime = performance.now(); // 获取加载结束时间
+            const loadTime = endTime - startTime; // 计算加载时间
+            console.log('Total load time:', loadTime.toFixed(2), 'milliseconds');
+    
+    
+            const endMemory = performance.memory.usedJSHeapSize; // 获取加载后的内存使用情况
+            console.log('Memory after loading:', endMemory, 'bytes');
+    
+            const resourceUsage = endMemory - startMemory; // 计算加载模型所占用的资源
+            console.log('Resource usage:', resourceUsage, 'bytes');
+    
+
             resolve(tasks);
           };
 
