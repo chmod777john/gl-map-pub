@@ -1,1 +1,3 @@
-创建容器 -> `pnpm prepare` ->  `pnpm build` -> `pnpm dev` -> F5 开始调试
+基础步骤：创建容器 -> `pnpm prepare` ->  `pnpm build` -> `pnpm dev` -> F5 开始调试
+
+切换数据集：`pnpm clean` -> `rm -r resources` -> `修改 ~/.bashrc ` -> 删掉当前终端，重启一个 -> pnpm prepare -> ...

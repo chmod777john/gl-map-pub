@@ -12,6 +12,16 @@ app.use(compression());
 // 使用express中间件来指定静态文件目录
 app.use(express.static(publicDir));
 
+// 中间件：在响应完成时打印日志
+app.use((req, res, next) => {
+  res.on('finish', () => {
+    console.log(`Response completed for: ${req.method} ${req.url}`);
+  });
+  next();
+});
+
+
+
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });

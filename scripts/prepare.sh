@@ -24,7 +24,8 @@ declare -A files_to_download
 # 定义文件和对应的 URL
 files_to_download=(
   ["KML.zip"]="https://iu6ritl3nvvqa6ez.s3.us-west-2.amazonaws.com/KML.zip"
-  ["Berlin_Centre.zip"]="https://iu6ritl3nvvqa6ez.s3.us-west-2.amazonaws.com/Berlin_Centre.zip"
+  ["Berlin_Centre.zip"]="https://iu6ritl3nvvqa6ez.s3.us-west-2.amazonaws.com/Berlin_Centre.zip",
+  ["Charlottenburg-Wilmersdorf.zip"]="https://iu6ritl3nvvqa6ez.s3.us-west-2.amazonaws.com/Charlottenburg-Wilmersdorf.zip"
   # 添加更多的文件和 URL...
 )
 
@@ -42,7 +43,9 @@ done
 
 # 下载信息表
 wget https://iu6ritl3nvvqa6ez.s3.us-west-2.amazonaws.com/Berlin_Centre_Attributes.csv
+wget https://iu6ritl3nvvqa6ez.s3.us-west-2.amazonaws.com/Charlottenburg-Wilmersdorf_Buildings_Attributes.csv
 wget https://iu6ritl3nvvqa6ez.s3.us-west-2.amazonaws.com/KML.csv
 
 mv ./KML.csv ../3dcitydb-client/KML.csv
 mv ./Berlin_Centre_Attributes.csv ../3dcitydb-client/Berlin_Centre.csv
+mv ./Charlottenburg-Wilmersdorf_Buildings_Attributes.csv ../3dcitydb-client/Charlottenburg-Wilmersdorf.csv
