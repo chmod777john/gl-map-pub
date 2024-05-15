@@ -6,6 +6,7 @@ import * as mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 import * as BABYLON from '@babylonjs/core'
+import * as GUI from 'babylonjs-gui';
 
 import "@babylonjs/loaders";
 
@@ -122,7 +123,28 @@ const ChildComp = ()=> {
     camera.checkCollisions = true;
     camera.ellipsoid = new BABYLON.Vector3(1, 1, 1); // 调整椭球的半径，以便在移动时防止直接贴在地面上
 
-
+    const label = new GUI.Rectangle();
+    label.width = "240px";
+    label.height = "200px";
+    label.cornerRadius = 20;
+    label.color = "white";
+    label.thickness = 4;
+    label.background = "black";
+    label.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    label.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+    label.top = "10px";
+    label.left = "10px";
+    label.paddingBottom = "50px";
+    label.zIndex = 5;
+    // adjust the label's transparency
+    label.alpha = 0.7;
+    const labelContent = new GUI.TextBlock();
+    labelContent.text = "FPC mode\nLeft-click: enter Pointerlock\nMoving mouse: look around\nEsc: exit Pointerlock\nW/A/S/D: move\n\nRight-click: show mesh name";
+    labelContent.color = "white";
+    labelContent.fontSize = 16;
+    label.addControl(labelContent);
+    const advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+    advancedTexture.addControl(label);
 
     light.intensity = 0.7;
 
