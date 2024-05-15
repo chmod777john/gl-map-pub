@@ -233,11 +233,19 @@ const ChildComp = ()=> {
     engine.runRenderLoop(function () {
       scene.render();
     });
-
+    function getMemoryUsage() {
+      if (performance.memory) {
+          return performance.memory.usedJSHeapSize;
+      } else {
+          console.warn('Memory usage information is not available in this browser.');
+          return null;
+      }
+  }
+  
 
     (async () => {
       const startTime = performance.now(); // 获取开始加载时间
-      const startMemory = performance.memory.usedJSHeapSize; // 获取加载前的内存使用情况
+      const startMemory = getMemoryUsage(); // 获取加载前的内存使用情况
       console.log('Memory before loading:', startMemory, 'bytes');
 
       async function loadModels() {
@@ -341,7 +349,7 @@ const ChildComp = ()=> {
             console.log('Total load time:', loadTime.toFixed(2), 'milliseconds');
     
     
-            const endMemory = performance.memory.usedJSHeapSize; // 获取加载后的内存使用情况
+            const endMemory = getMemoryUsage(); // 获取加载后的内存使用情况
             console.log('Memory after loading:', endMemory, 'bytes');
     
             const resourceUsage = endMemory - startMemory; // 计算加载模型所占用的资源
