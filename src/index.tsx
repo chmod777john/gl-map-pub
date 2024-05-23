@@ -6,7 +6,7 @@ import * as mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 import * as BABYLON from '@babylonjs/core'
-import * as GUI from 'babylonjs-gui';
+import * as GUI from '@babylonjs/gui'
 
 import "@babylonjs/loaders";
 

@@ -15,12 +15,12 @@
   "license": "ISC",
   "dependencies": {
     "@babylonjs/core": "^6.49.0",
+    "@babylonjs/gui": "^7.8.0",
     "@babylonjs/loaders": "^6.49.0",
     "@types/react": "^18.2.21",
     "@types/react-dom": "^18.2.7",
     "@types/three": "^0.155.1",
     "axios": "^1.5.1",
-    "babylonjs-gui": "^7.8.0",
     "compression": "^1.7.4",
     "concurrently": "^8.2.2",
     "earcut": "^2.2.4",
