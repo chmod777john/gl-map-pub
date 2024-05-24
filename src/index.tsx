@@ -186,6 +186,7 @@ const ChildComp = ()=> {
 
     character.layerMask = 0x0000FFFF
     camera.layerMask = 0xFFFF0000
+    advancedTexture.layer.layerMask = 0xFFF00FFF
     observe_camera.layerMask = 0x000FF000
 
     scene.onBeforeRenderObservable.add(()=>{
