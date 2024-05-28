@@ -139,7 +139,7 @@ const ChildComp = ()=> {
     // adjust the label's transparency
     label.alpha = 0.7;
     const labelContent = new GUI.TextBlock();
-    labelContent.text = "FPC mode\nLeft-click: enter Pointerlock\nMoving mouse: look around\nEsc: exit Pointerlock\nW/A/S/D: move\n\nRight-click: show mesh name";
+    labelContent.text = "FPC mode\nLeft arrow key: move left\nRight arrow key: move right\nUp arrow key: move forward\nDown arrow key: move\nbackward\nMouse: rotate";
     labelContent.color = "white";
     labelContent.fontSize = 16;
     label.addControl(labelContent);
@@ -186,6 +186,7 @@ const ChildComp = ()=> {
 
     character.layerMask = 0x0000FFFF
     camera.layerMask = 0xFFFF0000
+    advancedTexture.layer.layerMask = 0xFFF00FFF
     observe_camera.layerMask = 0x000FF000
 
     scene.onBeforeRenderObservable.add(()=>{
