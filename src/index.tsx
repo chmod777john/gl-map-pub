@@ -108,7 +108,7 @@ const ChildComp = ()=> {
     // Sets the skydome in ground projection mode
     const sky = new BABYLON.BackgroundMaterial("skyMaterial", scene);
     window.sky = sky
-    sky.reflectionTexture = new BABYLON.CubeTexture("https://assets.babylonjs.com/textures/skybox", scene);
+    sky.reflectionTexture = new BABYLON.CubeTexture("./skybox/skybox", scene);
     sky.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
     sky.enableGroundProjection = true;
     sky.projectedGroundRadius = skybox_size;
