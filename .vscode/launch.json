@@ -7,15 +7,15 @@
         {
             "type": "chrome",
             "request": "launch",
-            "name": "Cesium",
-            "url": "http://localhost:5000/examples/glTFRailwaySceneLoD3Example/index.html",
+            "name": "Babylonjs",
+            "url": "http://localhost:3000/?lat=52.5382497651&lon=13.3913520249",
             "webRoot": "${workspaceFolder}"
         },
         {
             "type": "chrome",
             "request": "launch",
-            "name": "Babylonjs",
-            "url": "http://localhost:3000/?lat=52.5382497651&lon=13.3913520249",
+            "name": "Cesium",
+            "url": "http://localhost:5000/examples/glTFRailwaySceneLoD3Example/index.html",
             "webRoot": "${workspaceFolder}"
         }
     ]
